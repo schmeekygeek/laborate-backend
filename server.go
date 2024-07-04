@@ -27,6 +27,7 @@ type CursorPosition struct {
 }
 
 func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
+  // get query parameter
   conn, _, _, err := ws.UpgradeHTTP(r, w)
   log.Printf("%v connected", conn.RemoteAddr().String())
   if err != nil {
@@ -37,6 +38,10 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
 func Init() *Server {
   s := Server{
   	rooms: map[string]Room{},
+  }
+  s.rooms["1234"] = Room{
+  	clients:   []Client{},
+  	textState: []byte{},
   }
   return &s
 }
