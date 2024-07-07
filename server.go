@@ -28,8 +28,16 @@ type CursorPosition struct {
   x, y int
 }
 
-type Message struct {
+const (
+  TEXTUPDATE = "text/update"
+  USERUPDATE = "user/update"
+  USERDSCNT = "user/disconnect"
+  USERCNT = "user/connect"
+)
 
+type Message struct {
+  messageType   string
+  payload       []byte
 }
 
 func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
@@ -75,6 +83,10 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
       return
     }
   }
+}
+
+func parseServerMessage(msg []byte) {
+
 }
 
 func Init() *Server {
