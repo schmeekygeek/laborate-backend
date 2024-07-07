@@ -64,20 +64,11 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
   log.Printf("%v connected", conn.RemoteAddr().String())
   for {
     msg, _, err := wsutil.ReadClientData(conn)
+    parseServerMessage(msg)
     if string(msg) == "hi" {
       log.Println(room)
-      log.Println(room.clients)
     }
-    for _, v := range s.rooms[roomId].clients {
-      if conn != *v.conn {
-        wsutil.WriteServerMessage(
-          *v.conn,
-          1,
-          msg,
-        )
-      }
-    }
-    log.Printf("%v said: %v", conn.RemoteAddr(), string(msg))
+    log.Printf("Received message %v from %v", conn.RemoteAddr(), string(msg))
     if err != nil {
       log.Println(err)
       return
@@ -86,7 +77,20 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseServerMessage(msg []byte) {
+  switch string(msg) {
+    case TEXTUPDATE:
+      log.Println("hi")
+  }
+}
 
+func (s *Server) broadcastMessage(roomId string, msg []byte) {
+  room, ok := s.rooms[roomId]
+  if ok {
+    return
+  }
+  for _, v := range room.clients {
+    wsutil.WriteServerBinary(*v.conn, msg)
+  }
 }
 
 func Init() *Server {

@@ -1,6 +1,6 @@
 module laborate
 
-go 1.21.5
+go 1.21
 
 require github.com/gobwas/ws v1.4.0
 
