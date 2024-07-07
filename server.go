@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
-	"net"
-	"net/http"
+  "log"
+  "net"
+  "net/http"
 
-	"github.com/gobwas/ws"
-	"github.com/gobwas/ws/wsutil"
+  "github.com/gobwas/ws"
+  "github.com/gobwas/ws/wsutil"
 )
 
 type Server struct {
@@ -35,6 +35,9 @@ type Message struct {
 func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
   // get query parameter
   conn, _, _, err := ws.UpgradeHTTP(r, w)
+  if err != nil {
+    log.Println(err.Error())
+  }
   roomId := r.URL.Query().Get("room")
   if roomId == "" {
     roomId = "1234"
@@ -49,17 +52,28 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request) {
   		y: 0,
   	},
   })
+  s.rooms[roomId] = room
   log.Printf("%v connected", conn.RemoteAddr().String())
   for {
     msg, _, err := wsutil.ReadClientData(conn)
+    if string(msg) == "hi" {
+      log.Println(room)
+      log.Println(room.clients)
+    }
+    for _, v := range s.rooms[roomId].clients {
+      if conn != *v.conn {
+        wsutil.WriteServerMessage(
+          *v.conn,
+          1,
+          msg,
+        )
+      }
+    }
     log.Printf("%v said: %v", conn.RemoteAddr(), string(msg))
     if err != nil {
       log.Println(err)
-      break
+      return
     }
-  }
-  if err != nil {
-    log.Println(err.Error())
   }
 }
 
